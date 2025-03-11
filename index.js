@@ -31,39 +31,40 @@
 // Purpose:
 // Help teachers retrieve and analyze student performance efficiently.
 
-
+const data= require('./data.json');
 const express = require('express');
 const { resolve } = require('path');
-const data = require('./data.json');
 
 const app = express();
 const port = 3010;
-
-app.use(express.static('static'));
 app.use(express.json())
+app.use(express.static('static'));
 
 app.get('/', (req, res) => {
   res.sendFile(resolve(__dirname, 'pages/index.html'));
 });
+app.post('/students/above-threshold',async(req,res)=>{
+ const {threshold}=req.body
+ try{
+ const student = data.filter((xyz)=>xyz.total>threshold)
+ const count=student.length
+ if(student.length==0){
+  
+ return res.status(400).send([])
+  
+ }
+ const std = data.map(item => ({ name: item.name, total: item.total }));
 
-app.post('/students/above-threshold',(req,res)=>{
-  const {threshold} =req.body;
-  try{
-    const student = data.filter((items)=>items.total>threshold)
-    res.json({count: student.length,students: data.map((items)=>({name:items.name,total:items.total}))})
-  }
-  catch(e){
-    res.json(
-      {
-        "count": 0,
-        "students":[]
-      }
-    )
-  }
+ return res.status(200).json({counts:count,students:{std}})
+
+
+
+ }catch(e)
+ {console.log.e}
+
+
 })
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
-
-
